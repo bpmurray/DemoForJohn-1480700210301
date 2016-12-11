@@ -94,7 +94,7 @@ AudioManager = function(stereo) {
              view.setInt16(ixOut, finalBuffer[ixIn], true);
              ixOut += 2;
          }
-         console.log("view size = " + index);
+         console.log("view size = " + ixOut);
 
          // our final binary blob that we can hand off
          var blob = new Blob([ view ], { type : 'audio/wav' });
