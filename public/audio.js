@@ -45,7 +45,7 @@ AudioManager = function(stereo) {
          }
           
          // create the buffer and view to create the .WAV file
-         var buffer = new ArrayBuffer(44 + interleaved.length * 2);
+         var buffer = new ArrayBuffer(44 + finalBuffer.length * 2);
          var view = new DataView(buffer);
           
          // Create the WAV container using the description at http://soundfile.sapp.org/doc/WaveFormat/
@@ -56,7 +56,7 @@ AudioManager = function(stereo) {
          view.setUint8(1, 'I');
          view.setUint8(2, 'F');
          view.setUint8(3, 'F');
-         view.setUint32(4, 44 + interleaved.length * 2, true);
+         view.setUint32(4, 44 + finalBuffer.length * 2, true);
 
          // WAVE chunk
          view.setUint8(8, 'W');
@@ -88,10 +88,10 @@ AudioManager = function(stereo) {
          view.setUint32(40, finalBuffer.length * 2, true); // Number of bytes
           
          // write the PCM samples
-         var length = interleaved.length;
+         var length = finalBuffer.length;
          var ixOut = 44;
          for (var ixIn=0; ixIn<length; ixIn++){
-             view.setInt16(index, interleaved[ixIn], true);
+             view.setInt16(ixOut, finalBuffer[ixIn], true);
              ixOut += 2;
          }
          console.log("view size = " + index);
@@ -118,8 +118,8 @@ AudioManager = function(stereo) {
       }
       
       this.askWatson = function() {
-          var wavfile = packageWAVFile();
-          sendWav(wavfile);
+          var wavfile = this.packageWAVFile();
+          this.sendWav(wavfile);
           this.audioContext.close();
       }
 
@@ -150,13 +150,13 @@ AudioManager = function(stereo) {
           var recorder = this.audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
        
           // Process the audio data as it arrives
-          recorder.onaudioprocess = function(e){
-              var left = e.inputBuffer.getChannelData(0);
+          recorder.onaudioprocess = function(evt){
+              var left = evt.inputBuffer.getChannelData(0);
               this.leftChannel.push(new Float32Array(left));
 
               // if stereo, we include the right channel
               if (channelCOunt > 1) {
-                 var right = e.inputBuffer.getChannelData(1);
+                 var right = evt.inputBuffer.getChannelData(1);
                  this.rightChannel.push(new Float32Array(right));
                  this.recordingLength += bufferSize;
               }
@@ -182,7 +182,7 @@ AudioManager = function(stereo) {
          this.leftChannel.length = this.rightChannel.length = this.recordingLength = 0;
 
          // Start recording
-         navigator.getUserMedia({audio:true, vide:false}, initialiseRecorder, function() { console.log("ERROR!!"); });
+         navigator.getUserMedia({audio:true, vide:false}, this.initialiseRecorder, function() { console.log("ERROR!!"); });
       }
 }
 
