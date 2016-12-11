@@ -1,155 +1,203 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Node-RED in Bluemix</title>
+<html>
+   <head>
+   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+   <script>
+      // global variables
+      var leftchannel = [];
+      var rightchannel = [];
+      var recording = false;
+      var recordingLength = 0;
+      var sampleRate = null;
+      var audioContext = null;
 
-	<link href='http://fonts.googleapis.com/css?family=Roboto+Slab:400,700,300,100' rel='stylesheet' type='text/css'>
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
 
-	<link href="css/simplegrid.css" rel="stylesheet" media="screen">
-	<link href="css/style.css" rel="stylesheet" media="screen">
+      // Error callback
+      function generalError() {
+         alert("ERROR!!");
+      }
 
+      // success callback when requesting audio input stream
+      function gotStream(stream) {
+          window.AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioContext = new AudioContext();
 
-</head>
-<body>
+          // retrieve the current sample rate to be used for WAV packaging
+          sampleRate = audioContext.sampleRate;
+ 
+          // creates a gain node
+          var volume = audioContext.createGain();
 
-<div class="header">
-    <div class="header-content">
-        <a href="/"><img class="logo" src="images/node-red.png" /> Node-RED in Bluemix</a>
-    </div>
-</div>
-<!-- Grid 1 -->
-<div class="title">
-    <div class="grid">
-        <div class="col-1-1">
-            <div class="content">
-                <h1>Node-RED in Bluemix</h1>
-                <h2>A visual tool for wiring the Internet of Things</h2>
-                <img src="images/node-red-title-flow.png" />
-            </div>
-        </div>
-    </div>
-</div>
+          // Create an AudioNode from the stream.
+          var audioIn = audioContext.createMediaStreamSource(stream);
 
-<!-- Grid 1/2 -->
-<div class="row2">
-    <div class="grid">
-        <div class="col-1-2">
-            <div class="content blurb">
-            <p>Node-RED provides a browser-based editor that makes it easy to wire together flows that can be deployed to the runtime in a single-click.</p>
-            <p>The version running here has been customised for the Bluemix cloud environment.</p>
-            <p>More information about Node-RED, including documentation, can be found at <a href="http://nodered.org">nodered.org</a>.</p>
-            </div>
-        </div>
-        <div class="col-1-2">
-            <div class="content blurb">
-                <p style="text-align: center"><a style="width:350px;" class="button" href="red/">Go to your Node-RED flow editor</a></p>
-                <p class="insecure hide" style="text-align: center"><a href="#password-protecting">Learn how to password-protect your instance</a></p>
-                <p style="text-align: center"><a href="#custom">Learn how to customise Node-RED</a></p>
-            </div>
-        </div>
-    </div>
-</div>
+          // connect the stream to the gain node
+          audioIn.connect(volume);
+  
+         // Connect the input stream to the gain node
+          audioIn.connect(volume);
 
-<!-- Grid 1/2 -->
-<div class="row3">
-    <div class="grid">
-        <div class="col-1-1">
-            <div class="content blurb">
-                <h3 id="custom">Customising your instance of Node-RED</h3>
-                <p>This template instance of Node-RED is enough to get you started creating flows.<p>
-                <p>You may want to customise it for your needs,
-                for example replacing this introduction page with your own, adding http authentication to the flow editor or adding new nodes to
-                the palette.</p>
-                <p>To start customising your instance of Node-RED, you can either download the application locally or use IBM DevOps Services to edit and deploy your changes directly.</p>
-                <div class="col-1-2">
-                    <div style="margin: 5px; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
-                        <h4>Using IBM DevOps Services</h4>
-                        <ol>
-                            <li>Within your Bluemix dashboard, open the overview page for the application.</li>
-                            <li>Click the link to <b>Add Git Integration</b> and follow the guide to import the application into IBM DevOps Services</li>
-                            <li>Once complete, click the <b>Edit Code</b> link to open it in IBM DevOps Services</li>
-                            <li>Customise the application following the guide below, commit your changes and push them back to Bluemix</li>
-                        </ol>
-                    </div>
-                </div>
-                <div class="col-1-2">
-                    <div style="margin: 5px; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
-                        <h4>Downloading the application locally</h4>
-                        <ol>
-                            <li>Within your Bluemix dashboard, open the overview page for the application.</li>
-                            <li>Click on the <b>Start Coding</b> in the sidebar</li>
-                            <li>Follow the instructions there for downloading, editing and pushing back into Bluemix</li>
-                        </ol>
-                    </div>
-                </div>
-                <p style="clear:both"></p>
+          // From the spec: This value controls how frequently the audioprocess event is 
+          // dispatched and how many sample-frames need to be processed each call. 
+          // Lower values for buffer size will result in a lower(better) latency. 
+          // Higher values will be necessary to avoid audio breakup and glitches.
+          var bufferSize = 2048;
+          var recorder = audioContext.createScriptProcessor(bufferSize, 2, 2);
+ 
+          recorder.onaudioprocess = function(e){
+              console.log('recording');
+              var left = e.inputBuffer.getChannelData(0);
+              var right = e.inputBuffer.getChannelData(1);
+              // we clone the samples
+              leftchannel.push(new Float32Array(left));
+              rightchannel.push(new Float32Array(right));
+              recordingLength += bufferSize;
+          }
+ 
+          // we connect the recorder
+          volume.connect(recorder);
+          recorder.connect(audioContext.destination); 
 
-                <h4 id="password-protecting">Password protect the flow editor</h4>
-                <p>By default, the editor is open for anyone to access and modify flows. To password-protect the editor:</p>
-                <ol>
-                  <li>In the Bluemix dashboard, select the 'Environment Variables' page for your application</li>
-                  <li>Add the following user-defined variables:
-                    <ul>
-                      <li><code>NODE_RED_USERNAME</code> - the username to secure the editor with</li>
-                      <li><code>NODE_RED_PASSWORD</code> - the password to secure the editor with</li>
-                     </ul>
-                   </li>
-                   <li>Click <code>Save</code>.</li>
-                </ol>
+      }
 
-                <h4>Adding new nodes to the palette</h4>
-                <ol>
-                    <li>There is a growing collection of additional nodes that can be added to the Node-RED editor.
-                    You can search for available nodes in the <a target="_blank" href="http://flows.nodered.org">Node-RED library</a>.</li>
-                    <li>Edit the file <code>package.json</code> and add the required node package to the <code>dependencies</code>
-                    section. The format is:
-                    <pre>"node-red-node-package-name":"x.x.x"</pre>
-                    Where <code>x.x.x</code> is the desired version number.</li>
-                </ol>
+      // Process a wav file
 
-                <h4>Upgrading the version of Node-RED</h4>
-                <ol><li>This boilerplate is configured to grab the latest stable release of Node-RED whenever the
-                    application is pushed into Bluemix. Simply commit and push a change from IBM DevOps Services
-                    or push from your local copy to trigger an update. You can find out about the latest version at <a href="http://nodered.org">nodered.org</a>.</li>
-                </ol>
+      // 1. Flat down the channels
+      function mergeBuffers(channelBuffer, recordingLength){
+        var result = new Float32Array(recordingLength);
+        var offset = 0;
+        var lng = channelBuffer.length;
+        for(var i = 0; i < lng; i++){
+          var buffer = channelBuffer[i];
+          result.set(buffer, offset);
+          offset += buffer.length;
+        }
+        return result;
+      }
 
-                <h4>Changing the static web content</h4>
-                <ol><li>The page you are reading now is served as static content from the application. This can be replaced
-                with whatever content you want in the <code>public</code> directory.</li></ol>
+      // 2. Interleave the audio data
+      function interleave(leftChannel, rightChannel){
+        var length = leftChannel.length + rightChannel.length;
+        var result = new Float32Array(length);
+       
+        var inputIndex = 0;
+ 
+        for(var index = 0; index < length;){
+          result[index++] = leftChannel[inputIndex];
+          result[index++] = rightChannel[inputIndex];
+          inputIndex++;
+        }
+        return result;
+      }
 
-                <h4>Remove static web content and serve the flow editor from the root path</h4>
-                <ol><li>In the file <code>bluemix-settings.js</code>, delete the <code>httpStatic</code> and <code>httpAdminRoot</code> entries.</li></ol>
-            </div>
-        </div>
-    </div>
-</div>
+      // 3. Convert to UTF8
+      function writeUTFBytes(view, offset, string){ 
+        var lng = string.length;
+        for(var i = 0; i < lng; i++){
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      }
 
-<div class="footer">
-    <div class="grid">
-        <div class="content">
-            <div class="ets-link"><a href="http://ibm.com/blogs/et">Node-RED is a creation of IBM Emerging Technology</a></div>
-            <div class="ets-link"><a href="http://ibm.com/blogs/et"><img class="ets-globe" src="images/ets-globe.png" /> </a></div>
-        </div>
-    </div>
-</div>
-<script>
+      // This is the wav packaging function
+      function packageWAVFile() {
+         // we flatten the left and right channels down
+         var leftBuffer = mergeBuffers(leftchannel, recordingLength);
+         var rightBuffer = mergeBuffers(rightchannel, recordingLength);
 
-$(function() {
-    $(".insecure").hide();
-    $.ajax({
-        dataType: "json",
-        url: "/red/settings",
-        success: function() {
-            $(".insecure").show();
-        },
-        error: function(jqXHR,textStatus,errorThrown) {}
-    });
+         // we interleave both channels together
+         var interleaved = interleave(leftBuffer, rightBuffer);
+          
+         // create the buffer and view to create the .WAV file
+         var buffer = new ArrayBuffer(44 + interleaved.length * 2);
+         var view = new DataView(buffer);
+          
+         // write the WAV container, check spec at: https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+         // RIFF chunk descriptor
+         writeUTFBytes(view, 0, 'RIFF');
+         view.setUint32(4, 44 + interleaved.length * 2, true);
+         writeUTFBytes(view, 8, 'WAVE');
 
-});
-</script>
-</body>
+         // FMT sub-chunk
+         writeUTFBytes(view, 12, 'fmt ');
+         view.setUint32(16, 16, true);
+         view.setUint16(20, 1, true);
+
+         // Is it stereo(2 channels)?
+         view.setUint16(22, 2, true);
+         view.setUint32(24, sampleRate, true);
+         view.setUint32(28, sampleRate * 4, true);
+         view.setUint16(32, 4, true);
+         view.setUint16(34, 16, true);
+
+         // data sub-chunk
+         writeUTFBytes(view, 36, 'data');
+         view.setUint32(40, interleaved.length * 2, true);
+          
+         // write the PCM samples
+         var lng = interleaved.length;
+         var index = 44;
+         var volume = 1;
+         for(var i = 0; i < lng; i++){
+             view.setInt16(index, interleaved[i] *(0x7FFF * volume), true);
+             index += 2;
+         }
+         console.log("view size = " + index);
+         // our final binary blob that we can hand off
+         var blob = new Blob([ view ], { type : 'audio/wav' });
+	 return blob;
+      }
+
+      function sendWav(wavFile){
+         var data = new FormData();
+         data.append('file', wavFile);
+  
+         $.ajax({
+            url: "https://demoforjohn.mybluemix.net/askwatson",
+            type: 'POST',
+            data: data,
+            contentType: false,
+            processData: false,
+            success: function(data) {
+               console.log("Success!!!");
+            }
+         });
+      }
+
+      function askWatson() {
+	 var wavfile = packageWAVFile();
+	 sendWav(wavfile);
+	 audioContext.close();
+	 var elem = document.getElementById("stop");
+	 elem.style.display="none";
+	 var elem = document.getElementById("start");
+	 elem.style.display="block";
+
+      }
+
+      function startRecording() {
+	 var elem = document.getElementById("start");
+	 elem.style.display="none";
+	 var elem = document.getElementById("stop");
+	 elem.style.display="block";
+
+	 leftchannel.length = rightchannel.length = 0;
+         recordingLength = 0;
+         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mediaDevices.getUserMedia
+		                                         || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+         navigator.getUserMedia({audio:true}, gotStream, generalError);
+      }
+
+   </script>
+   </head>
+   <body>
+      <div id="start" style="display:block">
+         <h1>Click button to start ...</h1>
+         <input type="button" value="Click to start" onclick="startRecording();">
+      </div>
+      <div id="stop" style="display:none">
+         <h1>Click button to send to Watson ...</h1>
+         <input type="button" value="Click to send" onclick="askWatson();">
+      </div>
+   </body>
 </html>
