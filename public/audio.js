@@ -6,7 +6,7 @@ AudioManager = function(stereo) {
       this.recordingLength = 0;
       this.sampleRate = null;
       this.audioContext = null;
-      this.channelCount = stereo ? 2 : 1;
+      channelCount = stereo ? 2 : 1;
       
       
       // This is the wav packaging function
@@ -16,21 +16,21 @@ AudioManager = function(stereo) {
          var leftBuffer = new Float32Array(this.recordingLength);
          var ixOut = 0;
          var cnt = leftChannel.length;
-         for(var ixIn=0; ixIn<cnt; ixIn++) {
+         for (var ixIn=0; ixIn<cnt; ixIn++) {
             var piece = leftChannel[ixIn];
-            leftBuffer.set(piece, offset);
+            leftBuffer.set(piece, ixOut);
             ixOut += piece.length;
          }
          var finalBuffer = leftBuffer;
       
          // Now the right buffer - IF it's strero
-         if (this.channelCount > 1 ) {
+         if (channelCount > 1 ) {
             var rightBuffer = new Float32Array(this.recordingLength);
             ixOut = 0;
             cnt = rightChannel.length;
-            for(var ixIn=0; ixIn<cnt; ixIn++) {
-               var piece = rightChannel[ixIn];
-               rightBuffer.set(piece, offset);
+            for (ixIn=0; ixIn<cnt; ixIn++) {
+               piece = rightChannel[ixIn];
+               rightBuffer.set(piece, ixOut);
                ixOut += piece.length;
             }
             // Now interleave the two stereo channels
@@ -74,9 +74,9 @@ AudioManager = function(stereo) {
          view.setUint16(20, 1, true);  // Format = 1 for PCM
       
          // Is it stereo(2 Channels)?
-         view.setUint16(22, this.channelCount, true);
+         view.setUint16(22, channelCount, true);
          view.setUint32(24, this.sampleRate, true);
-         view.setUint32(28, this.sampleRate * this.channelCount * 2, true);
+         view.setUint32(28, this.sampleRate * channelCount * 2, true);
          view.setUint16(32, this.channCount * 2, true);
          view.setUint16(34, 16, true); // Bits per sample
       
@@ -147,7 +147,7 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          var recorder = this.audioContext.createScriptProcessor(bufferSize, this.channelCount, this.channelCount);
+          var recorder = this.audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
