@@ -137,7 +137,7 @@ AudioManager = function(stereo) {
       
       this.askWatson = function() {
           var wavfile = this.packageWAVFile();
-          this.sendsocketWav(wavfile);
+          this.sendSocketWav(wavfile);
           this.audioContext.close();
       }
 
