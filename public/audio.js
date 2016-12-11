@@ -10,7 +10,7 @@ AudioManager = function(stereo) {
       
       
       // This is the wav packaging function
-      packageWAVFile = function() {
+      this.packageWAVFile = function() {
          // Merge the buffer pieces into one
          // First the left buffer
          var leftBuffer = new Float32Array(this.recordingLength);
@@ -101,7 +101,7 @@ AudioManager = function(stereo) {
          return blob;
       }
       
-      sendWav = function(wavFile){
+      this.sendWav = function(wavFile){
          var data = new FormData();
          data.append('file', wavFile);
         
@@ -117,7 +117,7 @@ AudioManager = function(stereo) {
          });
       }
       
-      askWatson = function() {
+      this.askWatson = function() {
           var wavfile = packageWAVFile();
           sendWav(wavfile);
           this.audioContext.close();
@@ -127,7 +127,7 @@ AudioManager = function(stereo) {
       // Start audio processing. The process passes the audio data through a
       // bunch of nodes, and we can simply add our own which is called
       // each time data is available.
-      initialiseRecorder = function(stream) {
+      this.initialiseRecorder = function(stream) {
           this.audioContext = window.AudioContext();
       
           // Create an AudioNode from the stream.
@@ -171,7 +171,7 @@ AudioManager = function(stereo) {
       }
       
       // This is the entry point - nothing else should be used!
-      startRecording = function() {
+      this.startRecording = function() {
          // Make sure we have the correct objects available
          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
                                   navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia ||
