@@ -2,18 +2,19 @@ AudioManager = function(stereo) {
       // global variables
       leftChannel = [];
       rightChannel = [];
+      recordingLength = 0;
+      channelCount = stereo ? 2 : 1;
+
       this.recording = false;
-      this.recordingLength = 0;
       this.sampleRate = null;
       this.audioContext = null;
-      channelCount = stereo ? 2 : 1;
       
       
       // This is the wav packaging function
       this.packageWAVFile = function() {
          // Merge the buffer pieces into one
          // First the left buffer
-         var leftBuffer = new Float32Array(this.recordingLength);
+         var leftBuffer = new Float32Array(recordingLength);
          var ixOut = 0;
          var cnt = leftChannel.length;
          for (var ixIn=0; ixIn<cnt; ixIn++) {
@@ -25,7 +26,7 @@ AudioManager = function(stereo) {
       
          // Now the right buffer - IF it's strero
          if (channelCount > 1 ) {
-            var rightBuffer = new Float32Array(this.recordingLength);
+            var rightBuffer = new Float32Array(recordingLength);
             ixOut = 0;
             cnt = rightChannel.length;
             for (ixIn=0; ixIn<cnt; ixIn++) {
@@ -153,12 +154,13 @@ AudioManager = function(stereo) {
           recorder.onaudioprocess = function(evt){
               var left = evt.inputBuffer.getChannelData(0);
               leftChannel.push(new Float32Array(left));
+              recordingLength += bufferSize;
 
               // if stereo, we include the right channel
               if (channelCount > 1) {
                  var right = evt.inputBuffer.getChannelData(1);
                  rightChannel.push(new Float32Array(right));
-                 this.recordingLength += bufferSize;
+                 recordingLength += bufferSize;
               }
           }
        
@@ -179,7 +181,7 @@ AudioManager = function(stereo) {
          window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
          // Initialise the lengths
-         leftChannel.length = rightChannel.length = this.recordingLength = 0;
+         leftChannel.length = rightChannel.length = recordingLength = 0;
 
          // Start recording
          navigator.getUserMedia({audio:true, vide:false}, this.initialiseRecorder, function() { console.log("ERROR!!"); });
