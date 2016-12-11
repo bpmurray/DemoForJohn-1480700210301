@@ -4,11 +4,11 @@
    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
    <script src="audio.js"></script>
    <script>
-
+      var audioman = null;
       function askWatson() {
 	 var elem = document.getElementById("stop");
 	 elem.style.display="none";
-	 var elem = document.getElementById("start");
+	 elem = document.getElementById("start");
 	 elem.style.display="block";
 	 audioman.askWatson();
       }
