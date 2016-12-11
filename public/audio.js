@@ -1,7 +1,7 @@
 AudioManager = function(stereo) {
       // global variables
-      this.leftChannel = [];
-      this.rightChannel = [];
+      leftChannel = [];
+      rightChannel = [];
       this.recording = false;
       this.recordingLength = 0;
       this.sampleRate = null;
@@ -15,9 +15,9 @@ AudioManager = function(stereo) {
          // First the left buffer
          var leftBuffer = new Float32Array(this.recordingLength);
          var ixOut = 0;
-         var cnt = this.leftChannel.length;
+         var cnt = leftChannel.length;
          for(var ixIn=0; ixIn<cnt; ixIn++) {
-            var piece = this.leftChannel[ixIn];
+            var piece = leftChannel[ixIn];
             leftBuffer.set(piece, offset);
             ixOut += piece.length;
          }
@@ -27,9 +27,9 @@ AudioManager = function(stereo) {
          if (this.channelCount > 1 ) {
             var rightBuffer = new Float32Array(this.recordingLength);
             ixOut = 0;
-            cnt = this.rightChannel.length;
+            cnt = rightChannel.length;
             for(var ixIn=0; ixIn<cnt; ixIn++) {
-               var piece = this.rightChannel[ixIn];
+               var piece = rightChannel[ixIn];
                rightBuffer.set(piece, offset);
                ixOut += piece.length;
             }
@@ -152,12 +152,12 @@ AudioManager = function(stereo) {
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
               var left = evt.inputBuffer.getChannelData(0);
-              this.leftChannel.push(new Float32Array(left));
+              leftChannel.push(new Float32Array(left));
 
               // if stereo, we include the right channel
               if (channelCount > 1) {
                  var right = evt.inputBuffer.getChannelData(1);
-                 this.rightChannel.push(new Float32Array(right));
+                 rightChannel.push(new Float32Array(right));
                  this.recordingLength += bufferSize;
               }
           }
@@ -179,7 +179,7 @@ AudioManager = function(stereo) {
          window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
          // Initialise the lengths
-         this.leftChannel.length = this.rightChannel.length = this.recordingLength = 0;
+         leftChannel.length = rightChannel.length = this.recordingLength = 0;
 
          // Start recording
          navigator.getUserMedia({audio:true, vide:false}, this.initialiseRecorder, function() { console.log("ERROR!!"); });
