@@ -155,7 +155,7 @@ AudioManager = function(stereo) {
               this.leftChannel.push(new Float32Array(left));
 
               // if stereo, we include the right channel
-              if (channelCOunt > 1) {
+              if (channelCount > 1) {
                  var right = evt.inputBuffer.getChannelData(1);
                  this.rightChannel.push(new Float32Array(right));
                  this.recordingLength += bufferSize;
