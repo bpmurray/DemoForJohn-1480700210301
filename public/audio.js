@@ -102,6 +102,23 @@ AudioManager = function(stereo) {
          return blob;
       }
       
+      this.sendSocketWav = function(wavFile){
+         var data = new FormData();
+         data.append('file', wavFile);
+         var socket = new WebSocket("ws://demoforjohn.mybluemix.net/ws/audio");
+         socket.binaryType = "blob";
+         socket.onopen = function() {
+            socket.send(data);
+         }
+         socket.onerror() {
+            console.log("SOCKET ERROR");
+         }
+         socket.onmessage(evt) {
+            console.log("RECEIVED:" + evt.data);
+            socket.close();
+         }
+      }
+      
       this.sendWav = function(wavFile){
          var data = new FormData();
          data.append('file', wavFile);
@@ -120,7 +137,7 @@ AudioManager = function(stereo) {
       
       this.askWatson = function() {
           var wavfile = this.packageWAVFile();
-          this.sendWav(wavfile);
+          this.sendsocketWav(wavfile);
           this.audioContext.close();
       }
 
