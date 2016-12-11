@@ -24,7 +24,7 @@ AudioManager = function(stereo) {
          var finalBuffer = leftBuffer;
       
          // Now the right buffer - IF it's strero
-         if (channelCount > 1 ) {
+         if (this.channelCount > 1 ) {
             var rightBuffer = new Float32Array(this.recordingLength);
             ixOut = 0;
             cnt = this.rightChannel.length;
@@ -128,7 +128,7 @@ AudioManager = function(stereo) {
       // bunch of nodes, and we can simply add our own which is called
       // each time data is available.
       this.initialiseRecorder = function(stream) {
-          this.audioContext = window.AudioContext();
+          this.audioContext = new AudioContext();
       
           // Create an AudioNode from the stream.
           var audioIn = this.audioContext.createMediaStreamSource(stream);
@@ -147,7 +147,7 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          var recorder = this.audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
+          var recorder = this.audioContext.createScriptProcessor(bufferSize, this.channelCount, this.channelCount);
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
