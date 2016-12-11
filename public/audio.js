@@ -110,10 +110,10 @@ AudioManager = function(stereo) {
          socket.onopen = function() {
             socket.send(data);
          }
-         socket.onerror() {
+         socket.onerror = function() {
             console.log("SOCKET ERROR");
          }
-         socket.onmessage(evt) {
+         socket.onmessage = function(evt) {
             console.log("RECEIVED:" + evt.data);
             socket.close();
          }
