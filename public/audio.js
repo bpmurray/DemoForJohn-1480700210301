@@ -102,8 +102,9 @@ AudioManager = function(stereo) {
       }
       
       this.sendSocketWav = function(wavFile){
-         var data = new FormData();
-         data.append('file', wavFile);
+         //var data = new FormData();
+         //data.append('file', wavFile);
+	 var data = wavFile;
          socket = new WebSocket("wss://demoforjohn.mybluemix.net/ws/audioin");
          socket.binaryType = "blob";
          socket.onopen = function() {
