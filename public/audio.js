@@ -134,10 +134,21 @@ AudioManager = function(stereo) {
             }
          });
       }
+
+      this.forceDownload(blob, filename) {
+         var url = (window.URL || window.webkitURL).createObjectURL(blob);
+         var link = window.document.createElement('a');
+         link.href = url;
+         link.download = filename || 'output.wav';
+         let click = document.createEvent("Event");
+         click.initEvent("click", true, true);
+         link.dispatchEvent(click);
+    }
       
       this.askWatson = function() {
           var wavfile = this.packageWAVFile();
-          this.sendSocketWav(wavfile);
+	  this.forceDownload(wavFile);
+          // this.sendSocketWav(wavfile);
           audioContext.close();
       }
 
