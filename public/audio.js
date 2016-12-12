@@ -4,6 +4,7 @@ AudioManager = function(stereo) {
       rightChannel = [];
       recordingLength = 0;
       channelCount = stereo ? 2 : 1;
+		socket=null;
 
       this.recording = false;
       this.sampleRate = null;
@@ -103,9 +104,9 @@ AudioManager = function(stereo) {
       }
       
       this.sendSocketWav = function(wavFile){
-         var data = new FormData();
-         data.append('file', wavFile);
-         var socket = new WebSocket("wss://demoforjohn.mybluemix.net/ws/audio");
+         var data = wavFile; //new FormData();
+         //data.append('file', wavFile);
+         socket = new WebSocket("wss://demoforjohn.mybluemix.net/ws/audio");
          socket.binaryType = "blob";
          socket.onopen = function() {
             socket.send(data);
