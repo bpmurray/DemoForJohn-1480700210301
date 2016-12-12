@@ -13,7 +13,7 @@ AudioManager = function(stereo) {
       // Push a string onto the WAV buffer
       this.writeString = function(view, offset, text) {
          for (var iX=0; iX<text.length; iX++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
+            view.setUint8(offset+iX, text.charCodeAt(iX));
          }
       }
 
