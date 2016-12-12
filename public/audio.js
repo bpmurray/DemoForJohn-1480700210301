@@ -9,6 +9,57 @@ AudioManager = function(stereo) {
       audioContext = null;
 
       
+          
+      // Push a string onto the WAV buffer
+      this.writeString = function(view, offset, text) {
+         for (var iX=0; iX<text.length; iX++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+         }
+      }
+
+      // Create the WAV container using the description at http://soundfile.sapp.org/doc/WaveFormat/
+      this.CreateWAVContainer = function(buff) {
+
+         // create the buffer and view to create the .WAV file
+         var buffer = new ArrayBuffer(44 + buff.length * 2);
+         var view = new DataView(buffer);
+
+         // RIFF chunk
+         // Text "RIFF" & chunk length
+         this.writeString(view, 0, "RIFF");
+         view.setUint32(4, 36 + buff.length * 2, true);
+
+         // WAVE chunk
+         this.writeString(view, 8, "WAVE");
+      
+         // FMT sub-chunk - "fmt " + chunk length
+         this.writeString(view, 12, "fmt ");
+         view.setUint32(16, 16, true); // Size = 16 for PCM
+
+         // Format = 1 for PCM
+         view.setUint16(20, 1, true);
+      
+         // Is it stereo(2 Channels)?
+         view.setUint16(22, channelCount, true);
+         view.setUint32(24, this.sampleRate, true);
+         view.setUint32(28, this.sampleRate * 4, true);
+         view.setUint16(32, channelCount * 2, true);
+         view.setUint16(34, 16, true); // Bits per sample
+      
+         // data sub-chunk
+         this.writeString(view, 36, "data");
+         view.setUint32(16, buff.length*2, true); // Size = 16 for PCM
+
+         // Data are stored as 2's complement
+         for (var iX=0; iX<buff.length; iX++) {
+            s = Math.max(-1, Math.min(1, input[i]));
+            view.setInt16(44+2*iX, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+         }
+         console.log("view size = " + (44+iX));
+
+         return view;
+      }
+
       // This is the wav packaging function
       this.packageWAVFile = function() {
          // Merge the buffer pieces into one
@@ -23,7 +74,7 @@ AudioManager = function(stereo) {
          }
          var finalBuffer = leftBuffer;
       
-         // Now the right buffer - IF it's strero
+         // Now the right buffer - IF it's stereo
          if (channelCount > 1 ) {
             var rightBuffer = new Float32Array(recordingLength);
             ixOut = 0;
@@ -44,67 +95,20 @@ AudioManager = function(stereo) {
             }
          }
           
-         // create the buffer and view to create the .WAV file
-         var buffer = new ArrayBuffer(44 + finalBuffer.length * 2);
-         var view = new DataView(buffer);
-          
-         // Create the WAV container using the description at http://soundfile.sapp.org/doc/WaveFormat/
 
-         // 1. RIFF chunk
-         // Text "RIFF"
-         view.setUint8(0, 'R');
-         view.setUint8(1, 'I');
-         view.setUint8(2, 'F');
-         view.setUint8(3, 'F');
-         view.setUint32(4, 44 + finalBuffer.length * 2, true);
-
-         // WAVE chunk
-         view.setUint8(8, 'W');
-         view.setUint8(9, 'A');
-         view.setUint8(0, 'V');
-         view.setUint8(11, 'E');
-      
-         // FMT sub-chunk
-         // Text "fmt "
-         view.setUint8(12, 'f');
-         view.setUint8(13, 'm');
-         view.setUint8(14, 't');
-         view.setUint8(15, ' ');
-         view.setUint32(16, 16, true); // Size = 16 for PCM
-         view.setUint16(20, 1, true);  // Format = 1 for PCM
-      
-         // Is it stereo(2 Channels)?
-         view.setUint16(22, channelCount, true);
-         view.setUint32(24, this.sampleRate, true);
-         view.setUint32(28, this.sampleRate * channelCount * 2, true);
-         view.setUint16(32, this.channCount * 2, true);
-         view.setUint16(34, 16, true); // Bits per sample
-      
-         // data sub-chunk
-         view.setUint8(36, 'd');
-         view.setUint8(37, 'a');
-         view.setUint8(38, 't');
-         view.setUint8(39, 'a');
-         view.setUint32(40, finalBuffer.length * 2, true); // Number of bytes
-          
-         // write the PCM samples
-         var length = finalBuffer.length;
-         var ixOut = 44;
-         for (var ixIn=0; ixIn<length; ixIn++){
-             view.setInt16(ixOut, finalBuffer[ixIn], true);
-             ixOut += 2;
-         }
-         console.log("view size = " + ixOut);
+         // Fill the view with the data in the buffer
+         var view = this.CreateWAVContainer(finalBuffer);
 
          // our final binary blob that we can hand off
          var blob = new Blob([ view ], { type : 'audio/wav' });
          return blob;
       }
+
       
       this.sendSocketWav = function(wavFile){
          //var data = new FormData();
          //data.append('file', wavFile);
-	 var data = wavFile;
+         var data = wavFile;
          socket = new WebSocket("wss://demoforjohn.mybluemix.net/ws/audioin");
          socket.binaryType = "blob";
          socket.onopen = function() {
@@ -147,7 +151,8 @@ AudioManager = function(stereo) {
       
       this.askWatson = function() {
           var wavfile = this.packageWAVFile();
-	  this.forceDownload(wavfile);
+          this.forceDownload(wavfile);
+
           // this.sendSocketWav(wavfile);
           audioContext.close();
       }
