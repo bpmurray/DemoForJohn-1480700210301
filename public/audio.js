@@ -5,11 +5,9 @@ AudioManager = function(stereo) {
       recordingLength = 0;
       channelCount = stereo ? 2 : 1;
       socket=null;
+      sampleRate = null;
+      audioContext = null;
 
-      this.recording = false;
-      this.sampleRate = null;
-      this.audioContext = null;
-      
       
       // This is the wav packaging function
       this.packageWAVFile = function() {
@@ -147,13 +145,13 @@ AudioManager = function(stereo) {
       // bunch of nodes, and we can simply add our own which is called
       // each time data is available.
       this.initialiseRecorder = function(stream) {
-          this.audioContext = new AudioContext();
+          audioContext = new AudioContext();
       
           // Create an AudioNode from the stream.
           var audioIn = this.audioContext.createMediaStreamSource(stream);
 
           // retrieve the current sample rate to be used for WAV packaging
-          this.sampleRate = this.audioContext.sampleRate;
+          sampleRate = this.audioContext.sampleRate;
 
 //          // creates a gain node
 //          var volume = this.audioContext.createGain();
