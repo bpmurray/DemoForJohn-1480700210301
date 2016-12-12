@@ -26,13 +26,18 @@
    </script>
    </head>
    <body>
-      <div id="start" style="display:block">
-         <h1>Click button to start ...</h1>
-         <input type="button" value="Click to start" onclick="startRecording();">
+      <div id="control">
+         <div id="start" style="display:block">
+            <h1>Click button to start ...</h1>
+            <input type="button" value="Click to start" onclick="startRecording();">
+         </div>
+         <div id="stop" style="display:none">
+            <h1>Click button to send to Watson ...</h1>
+            <input type="button" value="Click to send" onclick="askWatson();">
+         </div>
       </div>
-      <div id="stop" style="display:none">
-         <h1>Click button to send to Watson ...</h1>
-         <input type="button" value="Click to send" onclick="askWatson();">
+      <div>
+	 <a href="#" id="downlink">Click to download</a>
       </div>
    </body>
 </html>
