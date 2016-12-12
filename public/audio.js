@@ -129,7 +129,7 @@ AudioManager = function(stereo) {
             contentType: false,
             processData: false,
             success: function(data) {
-               console.log("Success!!!");
+               console.log("POSTed the data OK");
             }
          });
       }
@@ -137,7 +137,7 @@ AudioManager = function(stereo) {
       this.askWatson = function() {
           var wavfile = this.packageWAVFile();
           this.sendSocketWav(wavfile);
-          this.audioContext.close();
+          audioContext.close();
       }
 
 
@@ -148,13 +148,13 @@ AudioManager = function(stereo) {
           audioContext = new AudioContext();
       
           // Create an AudioNode from the stream.
-          var audioIn = this.audioContext.createMediaStreamSource(stream);
+          var audioIn = audioContext.createMediaStreamSource(stream);
 
           // retrieve the current sample rate to be used for WAV packaging
-          sampleRate = this.audioContext.sampleRate;
+          sampleRate = audioContext.sampleRate;
 
 //          // creates a gain node
-//          var volume = this.audioContext.createGain();
+//          var volume = audioContext.createGain();
 
 //          // connect the stream to the gain node
 //          audioIn.connect(volume);
@@ -164,7 +164,7 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          var recorder = this.audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
+          var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
@@ -184,7 +184,7 @@ AudioManager = function(stereo) {
           //volume.connect(recorder);
           audioIn.connect(recorder);
           // ... and connect the prefious destination
-          recorder.connect(this.audioContext.destination); 
+          recorder.connect(audioContext.destination); 
       
       }
       
