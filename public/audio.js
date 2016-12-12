@@ -52,7 +52,7 @@ AudioManager = function(stereo) {
 
          // Data are stored as 2's complement
          for (var iX=0; iX<buff.length; iX++) {
-            s = Math.max(-1, Math.min(1, input[i]));
+            s = Math.max(-1, Math.min(1, buff[iX]));
             view.setInt16(44+2*iX, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
          }
          console.log("view size = " + (44+iX));
