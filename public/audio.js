@@ -68,9 +68,8 @@ AudioManager = function(stereo) {
          var ixOut = 0;
          var cnt = leftChannel.length;
          for (var ixIn=0; ixIn<cnt; ixIn++) {
-            var piece = leftChannel[ixIn];
-            leftBuffer.set(piece, ixOut);
-            ixOut += piece.length;
+            leftBuffer.set(leftChannel[ixIn], ixOut);
+            ixOut += leftChannel[ixIn].length;
          }
          var finalBuffer = leftBuffer;
       
@@ -80,21 +79,19 @@ AudioManager = function(stereo) {
             ixOut = 0;
             cnt = rightChannel.length;
             for (ixIn=0; ixIn<cnt; ixIn++) {
-               piece = rightChannel[ixIn];
-               rightBuffer.set(piece, ixOut);
-               ixOut += piece.length;
+               rightBuffer.set(rightChannel[ixIn], ixOut);
+               ixOut += rightChannel[ixIn].length;
             }
             // Now interleave the two stereo channels
-            var length = leftBuffer.length + rightBuffer.length;
-            finalBuffer = new Float32Array(length);
+            cnt = leftBuffer.length + rightBuffer.length;
+            finalBuffer = new Float32Array(cnt);
        
-            var ixIn = 0;
-            for(var ixOut = 0; ixOut < length;ixOut++) {
+            var ixIn = ixOut = 0;
+            while (ixOut<cnt) {
                finalBuffer[ixOut++] = leftBuffer[ixIn];
-               finalBuffer[ixOut] = rightBuffer[ixIn++];
+               finalBuffer[ixOut++] = rightBuffer[ixIn++];
             }
          }
-          
 
          // Fill the view with the data in the buffer
          var view = this.CreateWAVContainer(finalBuffer);
@@ -181,19 +178,22 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
+          var createProcessingNode = (audioContext.createScriptProcessor || audioContext.createJavaScriptNode);
+          var recorder = createProcessingNode(bufferSize, channelCount, channelCount);
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
-              var left = evt.inputBuffer.getChannelData(0);
-              leftChannel.push(new Float32Array(left));
-              recordingLength += bufferSize;
-
-              // if stereo, we include the right channel
-              if (channelCount > 1) {
-                 var right = evt.inputBuffer.getChannelData(1);
-                 rightChannel.push(new Float32Array(right));
+              if (isRecording) {
+                 var left = evt.inputBuffer.getChannelData(0);
+                 leftChannel.push(new Float32Array(left));
                  recordingLength += bufferSize;
+
+                 // if stereo, we include the right channel
+                 if (channelCount > 1) {
+                    var right = evt.inputBuffer.getChannelData(1);
+                    rightChannel.push(new Float32Array(right));
+                    recordingLength += bufferSize;
+                 }
               }
           }
        
