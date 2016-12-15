@@ -138,12 +138,9 @@ AudioManager = function(stereo) {
 
       this.forceDownload = function(blob, filename) {
          var url = (window.URL || window.webkitURL).createObjectURL(blob);
-         var link = document.getElementById("downlink"); //window.document.createElement('a');
+         var link = document.getElementById("downlink");
          link.href = url;
          link.download = filename || 'output.wav';
-         //let click = document.createEvent("Event");
-         //click.initEvent("click", true, true);
-         //link.dispatchEvent(click);
     }
       
       this.askWatson = function() {
@@ -178,8 +175,7 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          var createProcessingNode = (audioContext.createScriptProcessor || audioContext.createJavaScriptNode);
-          var recorder = createProcessingNode(bufferSize, channelCount, channelCount);
+          var recorder = (audioContext.createScriptProcessor || audioContext.createJavaScriptNode)(bufferSize, channelCount, channelCount);
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
