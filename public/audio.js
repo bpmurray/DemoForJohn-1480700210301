@@ -164,19 +164,16 @@ AudioManager = function(stereo) {
           // retrieve the current sample rate to be used for WAV packaging
           sampleRate = audioContext.sampleRate;
 
-//          // creates a gain node
-//          var volume = audioContext.createGain();
-
-//          // connect the stream to the gain node
-//          audioIn.connect(volume);
-        
           // From the spec: This value controls how frequently the audioprocess event is 
           // dispatched and how many sample-frames need to be processed each call. 
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          //var recorder = (audioContext.createScriptProcessor || audioContext.createJavaScriptNode)(bufferSize, channelCount, channelCount);
-          var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
+			 if (audioContext.createScriptProcessor) {
+             var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
+			 } else {
+             var recorder = audioContext.createJavaScriptNode(bufferSize, channelCount, channelCount);
+			 }
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
@@ -195,8 +192,8 @@ AudioManager = function(stereo) {
           }
        
           // we connect the recorder ...
-          //volume.connect(recorder);
           audioIn.connect(recorder);
+
           // ... and connect the prefious destination
           recorder.connect(audioContext.destination); 
       
