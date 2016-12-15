@@ -10,7 +10,7 @@
 	 elem.style.display="none";
 	 elem = document.getElementById("start");
 	 elem.style.display="block";
-	 audioman.askWatson();
+	 audioman.askWatson(document.getElementById("transcript"));
       }
 
       function startRecording() {
@@ -37,7 +37,8 @@
          </div>
       </div>
       <div>
-	 <a href="#" id="downlink">Click to download</a>
+	 <!--a href="#" id="downlink">Click to download</a -->
+	 <span id="transcript"></span>
       </div>
    </body>
 </html>
