@@ -42,8 +42,8 @@ AudioManager = function(stereo) {
       
          // Is it stereo(2 Channels)?
          view.setUint16(22, channelCount, true);
-         view.setUint32(24, this.sampleRate, true);
-         view.setUint32(28, this.sampleRate * 4, true);
+         view.setUint32(24, sampleRate, true);
+         view.setUint32(28, sampleRate * 4, true);
          view.setUint16(32, channelCount * 2, true);
          view.setUint16(34, 16, true); // Bits per sample
       
