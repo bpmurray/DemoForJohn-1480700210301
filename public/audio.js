@@ -175,7 +175,8 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-          var recorder = (audioContext.createScriptProcessor || audioContext.createJavaScriptNode)(bufferSize, channelCount, channelCount);
+          //var recorder = (audioContext.createScriptProcessor || audioContext.createJavaScriptNode)(bufferSize, channelCount, channelCount);
+          var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
