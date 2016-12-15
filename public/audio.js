@@ -163,9 +163,6 @@ AudioManager = function(stereo) {
           // Create an AudioNode from the stream.
           var audioIn = audioContext.createMediaStreamSource(stream);
 
-          // retrieve the current sample rate to be used for WAV packaging
-          sampleRate = audioContext.sampleRate;
-
           // From the spec: This value controls how frequently the audioprocess event is 
           // dispatched and how many sample-frames need to be processed each call. 
           // Lower values for buffer size will result in a lower(better) latency. 
@@ -198,6 +195,9 @@ AudioManager = function(stereo) {
 
           // ... and connect the prefious destination
           recorder.connect(audioContext.destination); 
+
+          // retrieve the current sample rate to be used for WAV packaging
+          sampleRate = audioContext.sampleRate;
       
           isRecording = true;
       }
