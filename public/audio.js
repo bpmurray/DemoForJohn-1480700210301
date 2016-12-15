@@ -8,6 +8,7 @@ AudioManager = function(stereo) {
       var sampleRate = null;
       var audioContext = null;
       var isRecording = false;
+      var bufferSize = 2048;
 
       
           
@@ -147,9 +148,9 @@ AudioManager = function(stereo) {
       this.askWatson = function() {
          isRecording = true;
          var wavfile = this.packageWAVFile();
-         this.forceDownload(wavfile);
+         //this.forceDownload(wavfile);
 
-         // this.sendSocketWav(wavfile);
+         this.sendSocketWav(wavfile);
          audioContext.close();
       }
 
@@ -167,7 +168,6 @@ AudioManager = function(stereo) {
           // dispatched and how many sample-frames need to be processed each call. 
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
-          var bufferSize = 2048;
           if (audioContext.createScriptProcessor) {
              var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
           } else {
