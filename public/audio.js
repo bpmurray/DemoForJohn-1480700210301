@@ -1,12 +1,13 @@
 AudioManager = function(stereo) {
       // global variables
-      leftChannel = [];
-      rightChannel = [];
-      recordingLength = 0;
-      channelCount = stereo ? 2 : 1;
-      socket=null;
-      sampleRate = null;
-      audioContext = null;
+      var leftChannel = [];
+      var rightChannel = [];
+      var recordingLength = 0;
+      var channelCount = stereo ? 2 : 1;
+      var socket=null;
+      var sampleRate = null;
+      var audioContext = null;
+      var isRecording = false;
 
       
           
@@ -141,14 +142,15 @@ AudioManager = function(stereo) {
          var link = document.getElementById("downlink");
          link.href = url;
          link.download = filename || 'output.wav';
-    }
+      }
       
       this.askWatson = function() {
-          var wavfile = this.packageWAVFile();
-          this.forceDownload(wavfile);
+         isRecording = true;
+         var wavfile = this.packageWAVFile();
+         this.forceDownload(wavfile);
 
-          // this.sendSocketWav(wavfile);
-          audioContext.close();
+         // this.sendSocketWav(wavfile);
+         audioContext.close();
       }
 
 
@@ -169,11 +171,11 @@ AudioManager = function(stereo) {
           // Lower values for buffer size will result in a lower(better) latency. 
           // Higher values will be necessary to avoid audio breakup and glitches.
           var bufferSize = 2048;
-			 if (audioContext.createScriptProcessor) {
+          if (audioContext.createScriptProcessor) {
              var recorder = audioContext.createScriptProcessor(bufferSize, channelCount, channelCount);
-			 } else {
+          } else {
              var recorder = audioContext.createJavaScriptNode(bufferSize, channelCount, channelCount);
-			 }
+          }
        
           // Process the audio data as it arrives
           recorder.onaudioprocess = function(evt){
@@ -197,6 +199,7 @@ AudioManager = function(stereo) {
           // ... and connect the prefious destination
           recorder.connect(audioContext.destination); 
       
+          isRecording = true;
       }
       
       // This is the entry point - nothing else should be used!
