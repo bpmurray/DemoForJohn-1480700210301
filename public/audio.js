@@ -52,7 +52,7 @@ AudioManager = function(stereo) {
          view.setUint32(40, buff.length*2, true); // Size = 16 for PCM
 
          // Data are stored as 2's complement
-         for (var iX=0,iY=44; iX<buff.length; iX++,IY+=2) {
+         for (var iX=0,iY=44; iX<buff.length; iX++,iY+=2) {
             snd = Math.max(-1, Math.min(1, buff[iX]));
             view.setInt16(iY, snd < 0 ? snd * 0x8000 : snd * 0x7FFF, true);
          }
