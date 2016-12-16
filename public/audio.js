@@ -208,7 +208,7 @@ AudioManager = function(stereo) {
       this.startRecording = function() {
          // Make sure we have the correct objects available
          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
-                                  navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia ||
+                                  navigator.msGetUserMedia || //navigator.mediaDevices.getUserMedia ||
                                   navigator.mozGetUserMedia;
          window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
